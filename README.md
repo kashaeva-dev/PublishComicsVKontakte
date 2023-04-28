@@ -57,6 +57,8 @@ where ```<POST_ID>``` is the ID of the published post.
 
 On the VK group wall, you will see a post with the comic strip image and its alt text as the post message.
 
+## An example of the published comics
+
 ![An example of the published comics](comics_example.png)
 
 ## Contributing
