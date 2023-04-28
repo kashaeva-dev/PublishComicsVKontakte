@@ -1,8 +1,8 @@
 import os
+import random
 
 import requests
 from environs import Env
-import random
 
 
 def get_image(url, filename):
@@ -126,6 +126,7 @@ def main():
     saved_photo = save_server_photo_on_wall_vk(access_token, group_id, version, photo_server)
     publish_comics_on_wall_vk(access_token, group_id, version, saved_photo, message)
     os.remove(filename)
+
 
 if __name__ == '__main__':
     main()
