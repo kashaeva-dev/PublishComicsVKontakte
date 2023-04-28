@@ -115,8 +115,8 @@ def main():
     env = Env()
     env.read_env()
 
-    access_token = env('VK_TEST_5_TASK_ACCESS_TOKEN')
-    group_id = env('VK_PUBLISH_XKCD_COMICS_GROUP_ID')
+    access_token = env('VK_APPLICATION_ACCESS_TOKEN')
+    group_id = env('VK_GROUP_ID')
     version = env('VK_API_VERSION')
     comics_number = random.randint(1, get_total_xkcd_comics_number())
     filename, message = get_xkcd_comics(comics_number)

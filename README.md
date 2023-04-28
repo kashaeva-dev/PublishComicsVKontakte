@@ -1,3 +1,65 @@
-# PublishComicsVKontakte
-Publish comics xkcd on VKontakte
-https://oauth.vk.com/blank.html?payload=%7B%22type%22%3A%22silent_token%22%2C%22auth%22%3A1%2C%22user%22%3A%7B%22id%22%3A351904374%2C%22first_name%22%3A%22%D0%9D%D0%B0%D1%82%D0%B0%D0%BB%D0%B8%D1%8F%22%2C%22last_name%22%3A%22%D0%9A.%22%2C%22avatar%22%3A%22https%3A%2F%2Fsun1-47.userapi.com%2Fs%2Fv1%2Fig2%2FeJFoH0WCdkt3JYW8FTd7_I2AWooB2nC2gLvX8Car6AT473-FAl56RbxGZ90pMN3GNuFkNJAAG_69cubavH7nHkha.jpg%3Fsize%3D200x200%26quality%3D96%26crop%3D219%2C216%2C1728%2C1728%26ava%3D1%22%2C%22phone%22%3A%22%2B7%20***%20***%20**%2054%22%7D%2C%22token%22%3A%22xu_D9i9eP3Kyre9N8b4H3TxsFLqC7uo97r5Ufm36VZTT6aik_3Ovb934uwp3C7dva-XZYJ-EXlXcL8OxZYUxhyaV-NM7M9rx9pYeYB2BJdUsiC62ZvzgENjKdluKehV9VrjzTLAYsoSwf0I_oSlB-_7K8kdg-Hahjyt3Hhb3zJsRmCIBti2w1xw54X1bOhsjamFcu39bkLwkRaI4tByycvbtuFPZxu7ko46LBsul-eNzpLuJI2wX_DRdEtxeepqMMFy6iZNCRLXMAu_42esiYLExmo54xurWAlpRTPAfPi1J9ghYt4FMtgOHodFHBe1-BKjaGdkahp5URz2go6e5ZzUH5LKjQqyzX08LJN1htXw%22%2C%22ttl%22%3A600%2C%22uuid%22%3A%22%22%2C%22hash%22%3A%22zV31NLlbyzrRzY5a1zVB9cPk7tCRFBipyfIeDkgJS10%22%2C%22loadExternalUsers%22%3Afalse%7D
+# Publish comics xkcd on VKontakte group wall
+
+This is a Python code that publishes a random XKCD comic strip on a [VKontakte (VK)](https://vk.com/) group wall.
+The code consists of a single Python file, ```publish_comics_vk.py```, which uses the following libraries: os, random, requests, and environs.
+
+The program uses the [XKCD JSON API](https://xkcd.com/json.html) to retrieve a random comic strip from the XKCD website.
+It then uploads the comic strip image to the VK wall using VK API methods, along with the image's alt text as the post message.
+
+To use the program, you will need to create a [VK group](https://vk.com/groups?tab=admin), 
+a [VK standalone application](https://vk.com/apps?act=manage) and obtain the application client id (you can find it in your application settings),
+an access token with [Implicit Flow](https://vk.com/dev/implicit_flow_user) and a [group ID](https://regvk.com/id/).
+The access token, group ID, and VK API version should be stored in a ```.env``` file in the format specified below.
+
+Note that the program deletes the comic strip image file from your local storage after publishing it on the VK group wall.
+
+## Setup
+1. Clone the repository to your local machine
+2. Create a virtual environment in the project directory
+```
+python -m venv env
+```
+3. Activate the virtual environment:
+
+for Windows:
+```commandline
+.\env\Scripts\activate
+```
+
+for Linux or macOS:
+```commandline
+source env/bin/activate
+```
+4. Install the requirements: 
+```commandline
+pip install -r requirements.txt
+```
+6. Set environment variables in a file named .env. 
+Create it in the root directory of the project and add the following variables:
+```
+VK_APPLICATION_ACCESS_TOKEN=<YOUR_VK_APPLICATION_ACCESS_TOKEN>
+VK_USER_ID=<YOUR_VK_USER_ID>
+VK_API_VERSION=<YOUR_VK_API_VERSION>
+VK_GROUP_ID=<YOUR_VK_GROUP_ID>
+```
+
+You can get the above variables by the links in the beginning of this README file.
+
+## Usage
+
+To run the program, run the ```publish_comics_vk.py``` file in a Python environment.
+The program will retrieve a random comic strip, upload it to the VK wall, and publish it along with its alt text message. 
+In the case of success you will see the following message:
+```
+Комикс успешно опубликован. Номер публикации: <POST_ID>
+```
+where ```<POST_ID>``` is the ID of the published post.
+
+On the VK group wall, you will see a post with the comic strip image and its alt text as the post message.
+
+![An example of the published comics](comics_example.png)
+
+## Contributing
+
+If you have suggestions for how this code could be improved, please open an issue or a pull request.
+Contributions from the community are always welcome!
