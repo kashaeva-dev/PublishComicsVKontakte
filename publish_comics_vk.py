@@ -2,6 +2,7 @@ import os
 
 import requests
 from environs import Env
+import random
 
 
 def get_image(url, filename):
@@ -107,21 +108,24 @@ def publish_comics_on_wall_vk(access_token, group_id, version, saved_photo, mess
     response.raise_for_status()
 
     if response.ok:
-        return f"Комикс успешно опубликован. Номер публикации: {response.json()['response']['post_id']}"
+        print(f"Комикс успешно опубликован. Номер публикации: {response.json()['response']['post_id']}")
 
 
 def main():
     env = Env()
     env.read_env()
+
     access_token = env('VK_TEST_5_TASK_ACCESS_TOKEN')
     group_id = env('VK_PUBLISH_XKCD_COMICS_GROUP_ID')
     version = env('VK_API_VERSION')
-    filename, message = get_xkcd_comics(353)
+    comics_number = random.randint(1, get_total_xkcd_comics_number())
+    filename, message = get_xkcd_comics(comics_number)
+
     upload_url = get_vk_upload_wall_url(access_token, group_id, version)
     photo_server = (upload_photo_to_vk_wall_server(upload_url, filename))
     saved_photo = save_server_photo_on_wall_vk(access_token, group_id, version, photo_server)
-    print(publish_comics_on_wall_vk(access_token, group_id, version, saved_photo, message))
-
+    publish_comics_on_wall_vk(access_token, group_id, version, saved_photo, message)
+    os.remove(filename)
 
 if __name__ == '__main__':
     main()
