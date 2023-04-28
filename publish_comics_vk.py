@@ -13,6 +13,16 @@ def get_image(url, filename):
         file.write(response.content)
 
 
+def get_total_xkcd_comics_number():
+
+    url = 'https://xkcd.com/info.0.json'
+
+    response = requests.get(url)
+    response.raise_for_status()
+
+    return response.json()['num']
+
+
 def get_xkcd_comics(comics_number):
 
     url = f'https://xkcd.com/{comics_number}/info.0.json'
