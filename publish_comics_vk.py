@@ -27,7 +27,7 @@ def get_xkcd_comics(comics_number):
     return filename, message
 
 
-def get_wall_upload_server_vk(access_token, group_id, version):
+def get_vk_upload_wall_url(access_token, group_id, version):
 
     url = 'https://api.vk.com/method/photos.getWallUploadServer'
 
@@ -45,7 +45,7 @@ def get_wall_upload_server_vk(access_token, group_id, version):
     return upload_url
 
 
-def save_wall_photo_vk(upload_url, filename):
+def upload_photo_to_vk_wall_server(upload_url, filename):
 
     with open(filename, 'rb') as file:
         files = {
@@ -57,10 +57,31 @@ def save_wall_photo_vk(upload_url, filename):
     return response.json()
 
 
+def save_server_photo_on_wall_vk(access_token, group_id, version, photo_server):
+
+    url = 'https://api.vk.com/method/photos.saveWallPhoto'
+
+    params = {
+        'access_token': access_token,
+        'v': version,
+        'group_id': group_id,
+        'photo': photo_server['photo'],
+        'server': photo_server['server'],
+        'hash': photo_server['hash']
+    }
+
+    response = requests.post(url, params=params)
+    response.raise_for_status()
+
+    return response.json()
+
 if __name__ == '__main__':
     env = Env()
     env.read_env()
     access_token = env('VK_TEST_5_TASK_ACCESS_TOKEN')
     group_id = env('VK_PUBLISH_XKCD_COMICS_GROUP_ID')
     version = env('VK_API_VERSION')
-    print(get_wall_upload_server_vk(access_token, group_id, version))
+    filename, message = get_xkcd_comics(353)
+    upload_url = get_vk_upload_wall_url(access_token, group_id, version)
+    photo_server = (upload_photo_to_vk_wall_server(upload_url, filename))
+    print(save_server_photo_on_wall_vk(access_token, group_id, version, photo_server))
