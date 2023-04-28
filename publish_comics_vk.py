@@ -75,7 +75,30 @@ def save_server_photo_on_wall_vk(access_token, group_id, version, photo_server):
 
     return response.json()
 
-if __name__ == '__main__':
+
+def publish_comics_on_wall_vk(access_token, group_id, version, saved_photo, message):
+
+    url = 'https://api.vk.com/method/wall.post'
+    photo_owner_id = saved_photo['response'][0]['owner_id']
+    photo_id = saved_photo['response'][0]['id']
+
+    params = {
+        'access_token': access_token,
+        'v': version,
+        'owner_id': f'-{group_id}',
+        'from_group': 1,
+        'attachments': f"photo{photo_owner_id}_{photo_id}",
+        'message': message,
+    }
+
+    response = requests.post(url, params=params)
+    response.raise_for_status()
+
+    if response.ok:
+        return f"Комикс успешно опубликован. Номер публикации: {response.json()['response']['post_id']}"
+
+
+def main():
     env = Env()
     env.read_env()
     access_token = env('VK_TEST_5_TASK_ACCESS_TOKEN')
@@ -84,4 +107,9 @@ if __name__ == '__main__':
     filename, message = get_xkcd_comics(353)
     upload_url = get_vk_upload_wall_url(access_token, group_id, version)
     photo_server = (upload_photo_to_vk_wall_server(upload_url, filename))
-    print(save_server_photo_on_wall_vk(access_token, group_id, version, photo_server))
+    saved_photo = save_server_photo_on_wall_vk(access_token, group_id, version, photo_server)
+    print(publish_comics_on_wall_vk(access_token, group_id, version, saved_photo, message))
+
+
+if __name__ == '__main__':
+    main()
