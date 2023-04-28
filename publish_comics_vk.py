@@ -45,6 +45,18 @@ def get_wall_upload_server_vk(access_token, group_id, version):
     return upload_url
 
 
+def save_wall_photo_vk(upload_url, filename):
+
+    with open(filename, 'rb') as file:
+        files = {
+            'photo': file,
+        }
+        response = requests.post(upload_url, files=files)
+        response.raise_for_status()
+
+    return response.json()
+
+
 if __name__ == '__main__':
     env = Env()
     env.read_env()
