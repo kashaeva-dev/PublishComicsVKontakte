@@ -1,6 +1,8 @@
-import requests
 import os
+
+import requests
 from environs import Env
+
 
 def get_image(url, filename):
 
