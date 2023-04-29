@@ -5,37 +5,28 @@ import requests
 from environs import Env
 
 
-def get_image(url, filename):
+def get_random_xkcd_comic():
 
-    response = requests.get(url)
+    response = requests.get('https://xkcd.com/info.0.json')
     response.raise_for_status()
 
-    with open(filename, 'wb') as file:
-        file.write(response.content)
-
-
-def get_total_xkcd_comics_number():
-
-    url = 'https://xkcd.com/info.0.json'
-
-    response = requests.get(url)
-    response.raise_for_status()
-
-    return response.json()['num']
-
-
-def get_xkcd_comic(comic_number):
+    comics_number = response.json()['num']
+    comic_number = random.randint(1, comics_number)
 
     url = f'https://xkcd.com/{comic_number}/info.0.json'
 
     response = requests.get(url)
     response.raise_for_status()
 
-    url, message = response.json()['img'], response.json()['alt']
+    image_url, message = response.json()['img'], response.json()['alt']
 
     _, filename = os.path.split(url)
 
-    get_image(url, filename)
+    response = requests.get(image_url)
+    response.raise_for_status()
+
+    with open(filename, 'wb') as file:
+        file.write(response.content)
 
     return filename, message
 
@@ -118,9 +109,8 @@ def main():
     access_token = env('VK_APPLICATION_ACCESS_TOKEN')
     group_id = env('VK_GROUP_ID')
     version = env('VK_API_VERSION')
-    comics_number = random.randint(1, get_total_xkcd_comics_number())
-    filename, message = get_xkcd_comics(comics_number)
 
+    filename, message = get_random_xkcd_comic()
     upload_url = get_vk_upload_wall_url(access_token, group_id, version)
     photo_server = (upload_photo_to_vk_wall_server(upload_url, filename))
     saved_photo = save_server_photo_on_wall_vk(access_token, group_id, version, photo_server)
