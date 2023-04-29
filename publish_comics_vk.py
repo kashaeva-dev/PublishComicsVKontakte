@@ -22,7 +22,7 @@ def get_random_xkcd_comic():
 
     image_url, message = comic['img'], comic['alt']
 
-    _, filename = os.path.split(url)
+    _, filename = os.path.split(image_url)
 
     response = requests.get(image_url)
     response.raise_for_status()
@@ -58,7 +58,8 @@ def upload_photo(upload_url, filename):
             'photo': file,
         }
         response = requests.post(upload_url, files=files)
-        response.raise_for_status()
+
+    response.raise_for_status()
 
     return response.json()
 
@@ -85,6 +86,7 @@ def save_photo_on_wall(access_token, group_id, version, photo_server):
 def publish_photo(access_token, group_id, version, saved_photo, message):
 
     url = 'https://api.vk.com/method/wall.post'
+
     photo_owner_id = saved_photo['response'][0]['owner_id']
     photo_id = saved_photo['response'][0]['id']
 
