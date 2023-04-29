@@ -33,7 +33,7 @@ def get_random_xkcd_comic():
     return filename, message
 
 
-def get_vk_upload_wall_url(access_token, group_id, version):
+def get_server_url(access_token, group_id, version):
 
     url = 'https://api.vk.com/method/photos.getWallUploadServer'
 
@@ -51,7 +51,7 @@ def get_vk_upload_wall_url(access_token, group_id, version):
     return upload_url
 
 
-def upload_photo_to_vk_wall_server(upload_url, filename):
+def upload_photo(upload_url, filename):
 
     with open(filename, 'rb') as file:
         files = {
@@ -63,7 +63,7 @@ def upload_photo_to_vk_wall_server(upload_url, filename):
     return response.json()
 
 
-def save_server_photo_on_wall_vk(access_token, group_id, version, photo_server):
+def save_photo_on_wall(access_token, group_id, version, photo_server):
 
     url = 'https://api.vk.com/method/photos.saveWallPhoto'
 
@@ -82,7 +82,7 @@ def save_server_photo_on_wall_vk(access_token, group_id, version, photo_server):
     return response.json()
 
 
-def publish_comics_on_wall_vk(access_token, group_id, version, saved_photo, message):
+def publish_photo(access_token, group_id, version, saved_photo, message):
 
     url = 'https://api.vk.com/method/wall.post'
     photo_owner_id = saved_photo['response'][0]['owner_id']
@@ -113,10 +113,10 @@ def main():
     version = env('VK_API_VERSION')
 
     filename, message = get_random_xkcd_comic()
-    upload_url = get_vk_upload_wall_url(access_token, group_id, version)
-    photo_server = (upload_photo_to_vk_wall_server(upload_url, filename))
-    saved_photo = save_server_photo_on_wall_vk(access_token, group_id, version, photo_server)
-    publish_comics_on_wall_vk(access_token, group_id, version, saved_photo, message)
+    upload_url = get_server_url(access_token, group_id, version)
+    photo_server = (upload_photo(upload_url, filename))
+    saved_photo = save_photo_on_wall(access_token, group_id, version, photo_server)
+    publish_photo(access_token, group_id, version, saved_photo, message)
     os.remove(filename)
 
 
