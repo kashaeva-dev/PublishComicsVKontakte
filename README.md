@@ -59,7 +59,7 @@ On the VK group wall, you will see a post with the comic strip image and its alt
 
 ## An example of the published comics
 
-![An example of the published comics](comics_example.png)
+![An example of the published comics](comic_example.png)
 
 ## Contributing
 
