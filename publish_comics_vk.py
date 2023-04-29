@@ -1,9 +1,10 @@
 import os
 import random
+from dataclasses import dataclass
 
 import requests
 from environs import Env
-from dataclasses import dataclass
+
 
 @dataclass
 class Credentials:
@@ -20,9 +21,9 @@ class VkApiError(Exception):
         super().__init__(f'VK API error: {self.error_code}: {self.error_message}')
 
 
-def check_for_vk_api_errors(response):
-    if 'error' in response:
-        raise VkApiError(response['error']['error_code'], response['error']['error_msg'])
+def check_for_vk_api_errors(response_json):
+    if 'error' in response_json:
+        raise VkApiError(response_json['error']['error_code'], response_json['error']['error_msg'])
 
 
 def get_random_xkcd_comic():
