@@ -12,6 +12,19 @@ class Credentials:
     version: str
 
 
+class VkApiError(Exception):
+
+    def __init__(self, error_code, error_message):
+        self.error_code = error_code
+        self.error_message = error_message
+        super().__init__(f'VK API error: {self.error_code}: {self.error_message}')
+
+
+def check_for_vk_api_errors(response):
+    if 'error' in response:
+        raise VkApiError(response['error']['error_code'], response['error']['error_msg'])
+
+
 def get_random_xkcd_comic():
 
     response = requests.get('https://xkcd.com/info.0.json')
@@ -31,13 +44,16 @@ def get_random_xkcd_comic():
 
     _, filename = os.path.split(image_url)
 
+    return image_url, filename, message
+
+
+def save_image(image_url, filename):
+
     response = requests.get(image_url)
     response.raise_for_status()
 
     with open(filename, 'wb') as file:
         file.write(response.content)
-
-    return filename, message
 
 
 def get_server_url(vk: Credentials):
@@ -52,8 +68,10 @@ def get_server_url(vk: Credentials):
 
     response = requests.get(url, params=params)
     response.raise_for_status()
+    upload_server = response.json()
+    check_for_vk_api_errors(upload_server)
 
-    upload_url = response.json()['response']['upload_url']
+    upload_url = upload_server['response']['upload_url']
 
     return upload_url
 
@@ -69,6 +87,7 @@ def upload_photo(upload_url, filename):
     response.raise_for_status()
 
     uploaded_photo = response.json()
+    check_for_vk_api_errors(uploaded_photo)
 
     return (
         uploaded_photo['photo'],
@@ -94,6 +113,7 @@ def save_photo_on_wall(vk: Credentials, photo, server, hash):
     response.raise_for_status()
 
     saved_photo = response.json()
+    check_for_vk_api_errors(saved_photo)
 
     return (
         saved_photo['response'][0]['owner_id'],
@@ -115,9 +135,11 @@ def publish_photo(vk: Credentials, photo_owner_id, photo_id, message):
     }
 
     response = requests.post(url, params=params)
+    response.raise_for_status()
+    post = response.json()
+    check_for_vk_api_errors(post)
 
-    if response.ok:
-        print(f"Комикс успешно опубликован. Номер публикации: {response.json()['response']['post_id']}")
+    return post['response']['post_id']
 
 
 def main():
@@ -129,13 +151,20 @@ def main():
         version=env('VK_API_VERSION'),
     )
 
-    filename, message = get_random_xkcd_comic()
-    upload_url = get_server_url(vk)
-    photo, server, hash = (upload_photo(upload_url, filename))
-    photo_owner_id, photo_id = save_photo_on_wall(vk, photo, server, hash)
-    publish_photo(vk, photo_owner_id, photo_id, message)
-    os.remove(filename)
+    image_url, filename, message = get_random_xkcd_comic()
 
+    try:
+        save_image(image_url, filename)
+        upload_url = get_server_url(vk)
+        photo, server, hash = (upload_photo(upload_url, filename))
+        photo_owner_id, photo_id = save_photo_on_wall(vk, photo, server, hash)
+        post_id = publish_photo(vk, photo_owner_id, photo_id, message)
+        if post_id:
+            print(f'Комикс успешно опубликован. Номер публикации: {post_id}!')
+    except VkApiError as error:
+        print(f"Ошибка VK API (код ошибки - {error.error_code}): {error.error_message}")
+    finally:
+        os.remove(filename)
 
 if __name__ == '__main__':
     main()
