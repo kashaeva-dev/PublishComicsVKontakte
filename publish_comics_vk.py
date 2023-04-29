@@ -3,6 +3,13 @@ import random
 
 import requests
 from environs import Env
+from dataclasses import dataclass
+
+@dataclass
+class Credentials:
+    access_token: str
+    group_id: str
+    version: str
 
 
 def get_random_xkcd_comic():
@@ -33,14 +40,14 @@ def get_random_xkcd_comic():
     return filename, message
 
 
-def get_server_url(access_token, group_id, version):
+def get_server_url(vk: Credentials):
 
     url = 'https://api.vk.com/method/photos.getWallUploadServer'
 
     params = {
-        'access_token': access_token,
-        'v': version,
-        'group_id': group_id,
+        'access_token': vk.access_token,
+        'v': vk.version,
+        'group_id': vk.group_id,
     }
 
     response = requests.get(url, params=params)
@@ -61,46 +68,53 @@ def upload_photo(upload_url, filename):
 
     response.raise_for_status()
 
-    return response.json()
+    uploaded_photo = response.json()
+
+    return (
+        uploaded_photo['photo'],
+        uploaded_photo['server'],
+        uploaded_photo['hash']
+    )
 
 
-def save_photo_on_wall(access_token, group_id, version, photo_server):
+def save_photo_on_wall(vk: Credentials, photo, server, hash):
 
     url = 'https://api.vk.com/method/photos.saveWallPhoto'
 
     params = {
-        'access_token': access_token,
-        'v': version,
-        'group_id': group_id,
-        'photo': photo_server['photo'],
-        'server': photo_server['server'],
-        'hash': photo_server['hash']
+        'access_token': vk.access_token,
+        'v': vk.version,
+        'group_id': vk.group_id,
+        'photo': photo,
+        'server': server,
+        'hash': hash,
     }
 
     response = requests.post(url, params=params)
     response.raise_for_status()
 
-    return response.json()
+    saved_photo = response.json()
+
+    return (
+        saved_photo['response'][0]['owner_id'],
+        saved_photo['response'][0]['id'],
+    )
 
 
-def publish_photo(access_token, group_id, version, saved_photo, message):
+def publish_photo(vk: Credentials, photo_owner_id, photo_id, message):
 
     url = 'https://api.vk.com/method/wall.post'
 
-    photo_owner_id = saved_photo['response'][0]['owner_id']
-    photo_id = saved_photo['response'][0]['id']
-
     params = {
-        'access_token': access_token,
-        'v': version,
-        'owner_id': f'-{group_id}',
+        'access_token': vk.access_token,
+        'v': vk.version,
+        'owner_id': f'-{vk.group_id}',
         'from_group': 1,
         'attachments': f"photo{photo_owner_id}_{photo_id}",
         'message': message,
     }
 
     response = requests.post(url, params=params)
-    response.raise_for_status()
 
     if response.ok:
         print(f"Комикс успешно опубликован. Номер публикации: {response.json()['response']['post_id']}")
@@ -109,16 +123,17 @@ def publish_photo(access_token, group_id, version, saved_photo, message):
 def main():
     env = Env()
     env.read_env()
-
-    access_token = env('VK_APPLICATION_ACCESS_TOKEN')
-    group_id = env('VK_GROUP_ID')
-    version = env('VK_API_VERSION')
+    vk = Credentials(
+        access_token=env('VK_APPLICATION_ACCESS_TOKEN'),
+        group_id=env('VK_GROUP_ID'),
+        version=env('VK_API_VERSION'),
+    )
 
     filename, message = get_random_xkcd_comic()
-    upload_url = get_server_url(access_token, group_id, version)
-    photo_server = (upload_photo(upload_url, filename))
-    saved_photo = save_photo_on_wall(access_token, group_id, version, photo_server)
-    publish_photo(access_token, group_id, version, saved_photo, message)
+    upload_url = get_server_url(vk)
+    photo, server, hash = (upload_photo(upload_url, filename))
+    photo_owner_id, photo_id = save_photo_on_wall(vk, photo, server, hash)
+    publish_photo(vk, photo_owner_id, photo_id, message)
     os.remove(filename)
 
 
