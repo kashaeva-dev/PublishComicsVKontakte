@@ -90,11 +90,7 @@ def upload_photo(upload_url, filename):
     uploaded_photo = response.json()
     check_for_vk_api_errors(uploaded_photo)
 
-    return (
-        uploaded_photo['photo'],
-        uploaded_photo['server'],
-        uploaded_photo['hash']
-    )
+    return uploaded_photo['photo'], uploaded_photo['server'], uploaded_photo['hash']
 
 
 def save_photo_on_wall(vk: Credentials, photo, server, hash):
@@ -116,10 +112,10 @@ def save_photo_on_wall(vk: Credentials, photo, server, hash):
     saved_photo = response.json()
     check_for_vk_api_errors(saved_photo)
 
-    return (
-        saved_photo['response'][0]['owner_id'],
-        saved_photo['response'][0]['id'],
-    )
+    owner_id = saved_photo['response'][0]['owner_id']
+    photo_id = saved_photo['response'][0]['id']
+
+    return owner_id, photo_id
 
 
 def publish_photo(vk: Credentials, photo_owner_id, photo_id, message):
@@ -157,7 +153,7 @@ def main():
     try:
         save_image(image_url, filename)
         upload_url = get_server_url(vk)
-        photo, server, hash = (upload_photo(upload_url, filename))
+        photo, server, hash = upload_photo(upload_url, filename)
         photo_owner_id, photo_id = save_photo_on_wall(vk, photo, server, hash)
         post_id = publish_photo(vk, photo_owner_id, photo_id, message)
         if post_id:
